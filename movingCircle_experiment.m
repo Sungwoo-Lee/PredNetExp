@@ -37,7 +37,7 @@ experimentStartTime = GetSecs();
 
 % Set the screen size mode. Full-screen is used during the actual experiment,
 % while a smaller screen is helpful during debugging.
-debugMode = 0;  % 0 for full-screen mode, 1 for debugging mode
+debugMode = 1;  % 0 for full-screen mode, 1 for debugging mode
 
 if debugMode
     % For debugging, set a smaller screen size.
@@ -74,10 +74,10 @@ end
 % 5. EXPERIMENT VARIABLES
 
 % Number of trials to be conducted in the experiment.
-numTrials = 20;
+numTrials = 6;
 
 % Duration of each stimulus presentation in seconds.
-stimulusDuration = 10;
+stimulusDuration = 5;
 
 % Duration of the inter-trial interval (ITI) in seconds.
 ITI = 3;
@@ -85,6 +85,10 @@ ITI = 3;
 % Calculate the total number of frames for the stimulus duration based on the
 % screen's refresh rate (fps).
 numFrames = round(stimulusDuration * fps);
+
+% Define variables for the reaction task
+ractionSubsetRatio = 1.0; % Ratio of trials withㄴ a reaction task
+reactionTrials = sort(randperm(numTrials, round(numTrials * ractionSubsetRatio))); % Randomly select trials for reaction task
 
 % 6. STIMULUS PARAMETERS
 
@@ -200,7 +204,9 @@ experimentData = struct('experimentStartTime', experimentStartTime, ...
                                            'screenYpixels', screenYpixels, ...
                                            'aspectRatio', aspectRatio, ...
                                            'fps', fps, ...
-                                           'numTrials', numTrials, ...s
+                                           'numTrials', numTrials, ...
+                                           'ractionSubsetRatio', ractionSubsetRatio, ...
+                                           'reactionTrials', reactionTrials, ...
                                            'stimulusDuration', stimulusDuration, ...
                                            'waitForStart', waitForStart, ...
                                            'ITI', ITI, ...
@@ -220,7 +226,6 @@ experimentData = struct('experimentStartTime', experimentStartTime, ...
 
 % Main experiment loop
 for trial = 1:numTrials
-    
     % Record the trial start time
     trialStartTime = GetSecs();
     
@@ -241,8 +246,19 @@ for trial = 1:numTrials
         currentAngle = angles(randomizedIndices(currentIdx));  % Initialize currentAngle for unpredictable condition
     end
     
+    % Randomly select color change time for reaction trials
+    if ismember(trial, reactionTrials)
+        colorChangeTime = rand * (stimulusDuration - 1.5); % Random time within the trial (leaving 1.5 sec for response)
+    end
+
     frameCounter = 0;  % To track when to move to the next position
+    colorChanged = false; % Flag to check if the color has changed
+    responseLogged = false; % Flag to check if the response has been logged
+    colorChangeRecordTime = NaN;
+    responseTime = NaN;
     
+    % Record the stimulus start time
+    stimulusStartTime = GetSecs;
     for frame = 1:numFrames
         % Check for 'q' key press to quit the experiment
         [keyIsDown, ~, keyCode] = KbCheck;
@@ -268,13 +284,31 @@ for trial = 1:numTrials
         xPos = xCenter + radius * screenXpixels * cos(currentAngle) / aspectRatio;
         yPos = yCenter + radius * screenYpixels * sin(currentAngle);
         
-        % Draw the fixation cross at the center
-        Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
-        
         % Draw the circle at the calculated position
         Screen('FillOval', window, circleColor, ...
             [xPos - circleRadius, yPos - circleRadius, xPos + circleRadius, yPos + circleRadius]);
+
+        % Change fixation cross color at the designated time
+        if ismember(trial, reactionTrials) && ~responseLogged && (GetSecs - trialStartTime) >= colorChangeTime
+            % Change fixation cross to red
+            Screen('DrawLines', window, allCoords, lineWidthPix, [1 0 0], [xCenter yCenter]); % Change to red
+            colorChanged = true; % Update flag
+            colorChangeRecordTime = GetSecs;
+        else
+            % Draw the fixation cross at the center
+            Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
+        end
         
+        if ismember(trial, reactionTrials) && ~ responseLogged
+            % Check for 'a' key press to react
+            [keyIsDown, ~, keyCode] = KbCheck;
+            if keyIsDown && keyCode(KbName('a'))
+                Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
+                responseLogged = true;
+                responseTime = GetSecs;
+            end
+        end
+
         % Flip to the screen
         Screen('Flip', window);
         
@@ -289,10 +323,14 @@ for trial = 1:numTrials
     
     % Store timestamps and trial information for the current trial
     experimentData.trials(trial).trialStart = trialStartTime;
+    experimentData.trials(trial).stimulusStartTime = stimulusStartTime;
     experimentData.trials(trial).stimulusEnd = stimulusEndTime;
     experimentData.trials(trial).ITIStart = ITIStartTime;
+    experimentData.trials(trial).colorChangeTime = colorChangeRecordTime;
+    experimentData.trials(trial).responseTime = responseTime;
     experimentData.trials(trial).isPredictable = isPredictable;  % Store whether the trial was predictable
     experimentData.trials(trial).movementDirection = movementDirection;  % Store movement direction
+    experimentData.trials(trial).colorChanged = colorChanged;
     
     % Save the data after each trial (overwriting the same file)
     save(['data/run_' num2str(runNumber) '_data.mat'], 'experimentData');
