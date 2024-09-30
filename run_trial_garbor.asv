@@ -1,0 +1,114 @@
+function trialSettings = run_trial_garbor(trialSettings, experimentSettings, screenSettings, frame)
+
+    %%
+    window = screenSettings.window;
+    xCenter = screenSettings.xCenter;
+    yCenter = screenSettings.yCenter;
+    aspectRatio = screenSettings.aspectRatio;
+    screenXpixels = screenSettings.screenXpixels;
+    screenYpixels = screenSettings.screenYpixels;
+
+    %%
+    numFrames = experimentSettings.numFrames;
+    totalStimulusNumber = experimentSettings.totalStimulusNumber;
+    %%
+    gaborSize = experimentSettings.garbor.gaborSize;
+    spatialFrequency = experimentSettings.garbor.spatialFrequency;
+    sigma = experimentSettings.garbor.sigma;
+    contrast = experimentSettings.garbor.contrast;
+    phase = experimentSettings.garbor.phase;
+%     orientation = experimentSettings.garbor.orientation;
+    numConditions = experimentSettings.garbor.numConditions;
+    spatialFrequencies = experimentSettings.garbor.spatialFrequencies;
+    contrastList = experimentSettings.garbor.contrastList;
+    sigmaList = experimentSettings.garbor.sigmaList;
+    phaseList = experimentSettings.garbor.phaseList;
+    angles = experimentSettings.garbor.angles;
+    changeOrientation = experimentSettings.garbor.changeOrientation;
+    changeSpatialFrequency = experimentSettings.garbor.changeSpatialFrequency;
+    changeContrast = experimentSettings.garbor.changeContrast;
+    changeSigma = experimentSettings.garbor.changeSigma;
+    changePhase = experimentSettings.garbor.changePhase;
+    framesPerPositionPredictable = experimentSettings.garbor.framesPerPositionPredictable;
+    framesPerPositionUnpredictable = experimentSettings.garbor.framesPerPositionUnpredictable;
+
+    %%
+    if frame == 0
+        isPredictable = trialSettings.isPredictable;
+        gaborTexture = CreateProceduralGabor(window, gaborSize, gaborSize, [], [0.0 0.0 0.0 0.0]);
+        
+        conditionInterval = fix(totalStimulusNumber / numConditions);
+%         listOfConditions = linspace(1, totalStimulusNumber, conditionInterval);
+%         listOfConditions = linspace(1, totalStimulusNumber, numConditions);
+        listOfConditions = 1:1000:50;
+        
+        
+        if isPredictable
+            framesPerPosition = framesPerPositionPredictable;
+        else
+            framesPerPosition = framesPerPositionUnpredictable;
+        end
+
+
+        
+
+%         if isPredictable
+%             framesPerPosition = framesPerPositionPredictable;
+%             randomStartIdex = randi(length(listOfConditions));
+%             listOfConditions = [listOfConditions(randomStartIdex:end), listOfConditions(1:randomStartIdex)];
+%            
+%         else
+%             framesPerPosition = framesPerPositionUnpredictable;
+%             randomizedIndices = randperm(numConditions);
+%             listOfConditions = listOfConditions(randomizedIndices);
+%         end
+        
+        listOfConditionsPerFrame = repelem(listOfConditions, framesPerPosition);
+    
+        if size(listOfConditionsPerFrame,2) < numFrames
+            listOfConditionsPerFrame = repmat(listOfConditionsPerFrame, 1, 2);
+        end
+
+        trialSettings.gaborTexture = gaborTexture;
+        trialSettings.listOfConditionsPerFrame = listOfConditionsPerFrame;
+
+    else
+        listOfConditionsPerFrame = trialSettings.listOfConditionsPerFrame;
+        gaborTexture = trialSettings.gaborTexture;
+
+        if changeOrientation
+            currentAngle = angles(listOfConditionsPerFrame(frame));
+        else
+            currentAngle = angles(1);
+        end
+
+        if changeSpatialFrequency
+            currentSpatialFrequency = spatialFrequencies(listOfConditionsPerFrame(frame));
+        else
+            currentSpatialFrequency = spatialFrequencies(fix(length(spatialFrequencies)/2));
+        end
+
+        if changeContrast
+            currentContrast = contrastList((listOfConditionsPerFrame(frame)));
+        else
+            currentContrast = contrastList(fix(length(contrastList)/2));
+        end
+
+        if changeSigma
+            currentSigma= sigmaList((listOfConditionsPerFrame(frame)));
+        else
+            currentSigma= sigmaList(fix(length(sigmaList)/2));
+        end
+
+        if changePhase
+            currentPhase= phaseList((listOfConditionsPerFrame(frame)));
+        else
+            currentPhase= phaseList(fix(length(phaseList)/2));
+        end
+
+        % Draw the Gabor patch with updated parameters
+        Screen('DrawTexture', window, gaborTexture, [], [], currentAngle, [], [], [], [], ...
+            kPsychDontDoRotation, [currentPhase, currentSpatialFrequency, currentSigma, currentContrast, 1, 0, 0, 0]);
+    end
+
+end

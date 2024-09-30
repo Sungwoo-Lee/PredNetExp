@@ -87,10 +87,13 @@ ITI = 3;
 numFrames = round(stimulusDuration * fps);
 
 % Define variables for the reaction task
-ractionSubsetRatio = 1.0; % Ratio of trials withㄴ a reaction task
-reactionTrials = sort(randperm(numTrials, round(numTrials * ractionSubsetRatio))); % Randomly select trials for reaction task
+reactionSubsetRatio = 0.7; % Ratio of trials withㄴ a reaction task
+reactionTrials = sort(randperm(numTrials, round(numTrials * reactionSubsetRatio))); % Randomly select trials for reaction task
 
 % 6. STIMULUS PARAMETERS
+% Define variables for the predictable trials
+predictableSubsetRatio = 0.9; % Ratio of trials with a predictable task
+predictableTrials = sort(randperm(numTrials, round(numTrials * predictableSubsetRatio))); % Randomly select trials for predictable task
 
 % Speed of the moving stimulus in degrees per second for both predictable and
 % unpredictable conditions.
@@ -173,28 +176,13 @@ end
 % saving data after each trial, and eventually closing the screen and ending
 % the experiment.
 
-% Calculate the number of predictable and unpredictable trials
-numPredictable = floor(numTrials / 2);
-numUnpredictable = numPredictable;
-if mod(numTrials, 2) == 1
-    % Randomly assign the extra trial to either predictable or unpredictable
-    if rand() > 0.5
-        numPredictable = numPredictable + 1;
-    else
-        numUnpredictable = numUnpredictable + 1;
-    end
-end
-
-% Create a randomized list of trial types
-trialTypes = [ones(1, numPredictable), zeros(1, numUnpredictable)];  % 1 for predictable, 0 for unpredictable
-trialTypes = trialTypes(randperm(numTrials));  % Shuffle the order of trials
-
 % Store all experiment settings in the experimentData structure
 experimentData = struct('experimentStartTime', experimentStartTime, ...
                         'startKeyTime', startKeyTime, ...
                         'postBreakTime', postBreakTime, ...
                         'settings', struct('randomSeed', randomSeed, ...  % Store the random seed
-                                           'trialTypes', trialTypes, ...  % Store the trial types
+                                           'predictableSubsetRatio', predictableSubsetRatio, ...
+                                           'predictableTrials', predictableTrials, ...  % Store the trial types
                                            'runNumber', runNumber, ...
                                            'debugMode', debugMode, ...
                                            'screenSize', screenSize, ...
@@ -205,7 +193,7 @@ experimentData = struct('experimentStartTime', experimentStartTime, ...
                                            'aspectRatio', aspectRatio, ...
                                            'fps', fps, ...
                                            'numTrials', numTrials, ...
-                                           'ractionSubsetRatio', ractionSubsetRatio, ...
+                                           'reactionSubsetRatio', reactionSubsetRatio, ...
                                            'reactionTrials', reactionTrials, ...
                                            'stimulusDuration', stimulusDuration, ...
                                            'waitForStart', waitForStart, ...
@@ -230,7 +218,13 @@ for trial = 1:numTrials
     trialStartTime = GetSecs();
     
     % Determine if the current trial is predictable or unpredictable
-    isPredictable = trialTypes(trial);
+%     isPredictable = trialTypes(trial);
+
+    if ismember(trial, predictableTrials)
+        isPredictable = true;
+    else
+        isPredictable = false;
+    end
     
     if isPredictable
         % Predictable condition: Start at a random position and move sequentially
