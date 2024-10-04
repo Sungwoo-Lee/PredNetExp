@@ -11,13 +11,13 @@ function trialSettings = run_trial_garbor(trialSettings, experimentSettings, scr
     numConditions = experimentSettings.garbor.numConditions;
     spatialFrequencies = experimentSettings.garbor.spatialFrequencies;
     contrastList = experimentSettings.garbor.contrastList;
-    sigmaList = experimentSettings.garbor.sigmaList;
+    scList = experimentSettings.garbor.scList;
     phaseList = experimentSettings.garbor.phaseList;
     angles = experimentSettings.garbor.angles;
     changeOrientation = experimentSettings.garbor.changeOrientation;
     changeSpatialFrequency = experimentSettings.garbor.changeSpatialFrequency;
     changeContrast = experimentSettings.garbor.changeContrast;
-    changeSigma = experimentSettings.garbor.changeSigma;
+    changeSC = experimentSettings.garbor.changeSC;
     changePhase = experimentSettings.garbor.changePhase;
     framesPerCondition = experimentSettings.garbor.framesPerCondition;
 
@@ -37,7 +37,7 @@ function trialSettings = run_trial_garbor(trialSettings, experimentSettings, scr
         listOfConditionsPerFrame = repelem(listOfConditions, framesPerCondition);
     
         if size(listOfConditionsPerFrame,2) < numFrames
-            error('SizeError:ConditionListPerFrame', 'The listOfConditions X framesPerPosition is less than total number of frames');
+            error('SizeError:ConditionListPerFrame', 'The listOfConditions X framesPerCondition is less than total number of frames');
         end
 
         trialSettings.gaborTexture = gaborTexture;
@@ -65,10 +65,10 @@ function trialSettings = run_trial_garbor(trialSettings, experimentSettings, scr
             currentContrast = contrastList(fix(length(contrastList)/2));
         end
 
-        if changeSigma
-            currentSigma= sigmaList((listOfConditionsPerFrame(frame)));
+        if changeSC
+            currentSC= scList((listOfConditionsPerFrame(frame)));
         else
-            currentSigma= sigmaList(fix(length(sigmaList)/2));
+            currentSC= scList(fix(length(scList)/2));
         end
 
         if changePhase
@@ -79,7 +79,7 @@ function trialSettings = run_trial_garbor(trialSettings, experimentSettings, scr
 
         % Draw the Gabor patch with updated parameters
         Screen('DrawTexture', window, gaborTexture, [], [], currentAngle, [], [], [], [], ...
-            kPsychDontDoRotation, [currentPhase, currentSpatialFrequency, currentSigma, currentContrast, 1, 0, 0, 0]);
+            kPsychDontDoRotation, [currentPhase, currentSpatialFrequency, currentSC, currentContrast, 1, 0, 0, 0]);
     end
 
 end

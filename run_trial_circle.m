@@ -17,8 +17,7 @@ function trialSettings = run_trial_circle(trialSettings, experimentSettings, scr
     circleColor = experimentSettings.circle.circleColor;
     numPositions = experimentSettings.circle.numPositions;
     angles = experimentSettings.circle.angles;
-    framesPerPositionPredictable = experimentSettings.circle.framesPerPositionPredictable;
-    framesPerPositionUnpredictable = experimentSettings.circle.framesPerPositionUnpredictable;
+    framesPerPosition = experimentSettings.circle.framesPerPosition;
 
     %%
     if frame == 0
@@ -27,12 +26,10 @@ function trialSettings = run_trial_circle(trialSettings, experimentSettings, scr
         listOfConditions = linspace(1, numPositions, numPositions);
         
         if isPredictable
-            framesPerPosition = framesPerPositionPredictable;
             randomStartIdex = randi(length(listOfConditions));
             listOfConditions = [listOfConditions(randomStartIdex:end), listOfConditions(1:randomStartIdex)];
            
         else
-            framesPerPosition = framesPerPositionUnpredictable;
             randomizedIndices = randperm(numPositions);
             listOfConditions = listOfConditions(randomizedIndices);
         end
@@ -40,7 +37,7 @@ function trialSettings = run_trial_circle(trialSettings, experimentSettings, scr
         listOfConditionsPerFrame = repelem(listOfConditions, framesPerPosition);
     
         if size(listOfConditionsPerFrame,2) < numFrames
-            listOfConditionsPerFrame = repmat(listOfConditionsPerFrame, 1, 2);
+            error('SizeError:ConditionListPerFrame', 'The listOfConditions X framesPerPosition is less than total number of frames');
         end
         
         trialSettings.listOfConditionsPerFrame = listOfConditionsPerFrame;

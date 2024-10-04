@@ -57,13 +57,14 @@ yCenter = screenSettings.yCenter;
 %%
 % 3. EXPERIMENT VARIABLES
 % Number of trials to be conducted in the experiment.
-numTrials = 4;
+numTrials = 2;
 
 % Duration of each stimulus presentation in seconds.
 stimulusDuration = 10;
 
 % Duration of the inter-trial interval (ITI) in seconds.
 ITI = 3;
+itiFrames = ITI * screenSettings.fps;
 
 % Duration of stabilizing the scanner
 waitForStart = 3; % 13
@@ -74,6 +75,7 @@ experimentSettings.numFrames = round(stimulusDuration * screenSettings.fps);
 experimentSettings.numTrials = numTrials;
 experimentSettings.stimulusDuration = stimulusDuration;
 experimentSettings.ITI = ITI;
+experimentSettings.itiFrames = itiFrames;
 experimentSettings = ExperimentSettings(experimentSettings, screenSettings);
 
 lineWidthPix = experimentSettings.lineWidthPix;
@@ -126,22 +128,43 @@ experimentData = struct('experimentStartTime', experimentStartTime, ...
                                            'experimentSettings', experimentSettings), ...
                         'trials', []);
 
+% Define the path to the folder
+recordingFolder = fullfile(pwd, 'recordings');
+
+% Check if the folder exists, if not, create it
+if ~exist(recordingFolder, 'dir')
+    mkdir(recordingFolder);
+end
+
 %%
 % 7. MAIN EXPERIMENT
+globalFrame = 1;
 
 % Main experiment loop
 for trial = 1:numTrials
-    experimentData = run_trial(trial, experimentSettings, screenSettings, experimentData);
+    [experimentData, globalFrame] = run_trial(trial, experimentSettings, screenSettings, experimentData, globalFrame);
     
     % Save the data after each trial (overwriting the same file)
     save(['data/run_' num2str(runNumber) '_data.mat'], 'experimentData');
     
-    % Display only the fixation cross during the inter-trial interval (ITI)
-    Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
-    Screen('Flip', window);
-    
     % Pause for the inter-trial interval (ITI)
-    WaitSecs(ITI);
+%     WaitSecs(ITI);
+    for frame = 1:itiFrames
+        % Display only the fixation cross during the inter-trial interval (ITI)
+        Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
+        Screen('Flip', window);
+
+        % Define the rectangle for capturing (entire screen)
+        rect = [];  % Empty rectangle captures the entire screen
+        
+        % Capture the frame from the screen
+        imageArray = Screen('GetImage', window, rect);
+        fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_ITI_frame_%04d.png', globalFrame, trial, frame));
+        % Save the image as a file
+        imwrite(imageArray, fileName);
+
+        globalFrame = globalFrame + 1;
+    end
 end
 
 %%

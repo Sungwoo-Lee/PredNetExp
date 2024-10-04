@@ -23,12 +23,11 @@ function screenSettings = ScreenSettings(screenSize)
     % the screen can display. If it returns 0 (which may happen in some setups),
     % we set it to 60 Hz as a default.
     fps = Screen('FrameRate', window);
-%     if fps == 0
-%         fps = 60;
-%     end
+    if fps == 0
+        fps = 60;
+    end
 
-    ifi = Screen('GetFlipInterval', window);  % Inter-frame interval
-
+    fps = 25;
 
     screenSettings.window = window;
     screenSettings.windowRect = windowRect;

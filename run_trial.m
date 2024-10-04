@@ -1,4 +1,4 @@
-function experimentData = run_trial(trial, experimentSettings, screenSettings, experimentData)
+function [experimentData, globalFrame] = run_trial(trial, experimentSettings, screenSettings, experimentData, globalFrame)
     %% Record the trial start time
     trialStartTime = GetSecs();
 
@@ -26,7 +26,6 @@ function experimentData = run_trial(trial, experimentSettings, screenSettings, e
 
     frame = 0;
     trialSettings.isPredictable = isPredictable;
-%     trialSettings = run_trial_circle(trialSettings, experimentSettings, screenSettings, frame);
     if runType == "circle"
         trialSettings = run_trial_circle(trialSettings, experimentSettings, screenSettings, frame);
         USE_FIXATION_TASK = experimentSettings.circle.USE_FIXATION_TASK;
@@ -35,8 +34,6 @@ function experimentData = run_trial(trial, experimentSettings, screenSettings, e
         trialSettings = run_trial_garbor(trialSettings, experimentSettings, screenSettings, frame);
         USE_FIXATION_TASK = experimentSettings.garbor.USE_FIXATION_TASK;
     end
-
-%     listOfConditionsPerFrame = trialSettings.listOfConditionsPerFrame;
     
     %%
     if USE_FIXATION_TASK
@@ -95,6 +92,18 @@ function experimentData = run_trial(trial, experimentSettings, screenSettings, e
     
         % Flip to the screen
         Screen('Flip', window);
+
+        % Define the rectangle for capturing (entire screen)
+        rect = [];  % Empty rectangle captures the entire screen
+        
+        % Capture the frame from the screen
+        imageArray = Screen('GetImage', window, rect);
+        fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_STIMULUS_frame_%04d.png', globalFrame, trial, frame));
+        % Save the image as a file
+        imwrite(imageArray, fileName);
+
+        globalFrame = globalFrame + 1;
+
     end
     
     %% Record the stimulus end time
@@ -110,6 +119,7 @@ function experimentData = run_trial(trial, experimentSettings, screenSettings, e
     experimentData.trials(trial).ITIStart = ITIStartTime;
     experimentData.trials(trial).isPredictable = isPredictable;  % Store whether the trial was predictable
 %     experimentData.trials(trial).listOfConditionsPerFrame = listOfConditionsPerFrame; 
+    experimentData.trials(trial).trialSettings = trialSettings;
     
     if USE_FIXATION_TASK
         experimentData.trials(trial).colorChangeTime = colorChangeRecordTime;
