@@ -1,16 +1,22 @@
 function experimentSettings = ExperimentSettings(experimentSettings, screenSettings)
-    numTrials = experimentSettings.numTrials;
+    % Number of trials to be conducted in the experiment.
+    numTrials = 14;
+    
+    % Duration of each stimulus presentation in seconds.
+    stimulusDuration = 10;
+    
+    % Duration of the inter-trial interval (ITI) in seconds.
+    ITI = 3;
+    itiFrames = ITI * screenSettings.fps;
+
+    numFrames = round(stimulusDuration * screenSettings.fps);
+    
+    predictableSubsetRatio = experimentSettings.predictableSubsetRatio;
     screenXpixels = screenSettings.screenXpixels;
     screenYpixels = screenSettings.screenYpixels;
-%     fps = screenSettings.fps;
-
-    % Define variables for the reaction task
-    reactionSubsetRatio = 0.7; % Ratio of trials with a reaction task
-    reactionTrials = sort(randperm(numTrials, round(numTrials * reactionSubsetRatio))); % Randomly select trials for reaction task
     
     % STIMULUS PARAMETERS
     % Define variables for the predictable trials
-    predictableSubsetRatio = 0.0; % Ratio of trials with a predictable task
     predictableTrials = sort(randperm(numTrials, round(numTrials * predictableSubsetRatio))); % Randomly select trials for predictable task
 
     % Parameters for the fixation cross, which remains on the screen to help the
@@ -23,22 +29,34 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
     yCoords = [0 0 -fixCrossDimPix fixCrossDimPix];
     allCoords = [xCoords; yCoords];
 
-    totalStimulusNumber = 1000;
+    totalStimulusNumber = 1200;
+    numConditions = 120;
 
-    experimentSettings.reactionSubsetRatio = reactionSubsetRatio;
-    experimentSettings.reactionTrials = reactionTrials;
+    framesPerCondition = numFrames/numConditions;
+    
+    experimentSettings.numFrames = numFrames;
+    experimentSettings.numTrials = numTrials;
+    experimentSettings.stimulusDuration = stimulusDuration;
+    experimentSettings.ITI = ITI;
+    experimentSettings.itiFrames = itiFrames;
     experimentSettings.predictableSubsetRatio = predictableSubsetRatio;
     experimentSettings.predictableTrials = predictableTrials;
     experimentSettings.fixCrossDimPix = fixCrossDimPix;
     experimentSettings.lineWidthPix = lineWidthPix;
     experimentSettings.allCoords = allCoords;
+    experimentSettings.numConditions = numConditions;
+    experimentSettings.framesPerCondition = framesPerCondition;
     experimentSettings.totalStimulusNumber = totalStimulusNumber;
+   
+    reactionSubsetRatio = experimentSettings.reactionSubsetRatio;
+    reactionTrials = sort(randperm(numTrials, round(numTrials * reactionSubsetRatio))); % Randomly select trials for reaction task
+    experimentSettings.reactionTrials = reactionTrials;
 
     if experimentSettings.runType == "circle"
         USE_FIXATION_TASK = true;
         % Determine whether the predictable stimulus moves clockwise or anti-clockwise.
         % 1 for clockwise, -1 for anti-clockwise.
-        movementDirection = -1;
+        movementDirection = 1;
 
         % Radius of the circular path (as a proportion of screen size) along which
         % the stimulus will move.
@@ -50,28 +68,23 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
 
         % Define the number of positions around the circle where the stimulus can appear.
         % These positions are evenly spaced along the circumference.
-        numPositions = 100;
-        angles = linspace(0, 2 * pi, numPositions + 1);
-        angles(end) = [];  % Remove the last point to avoid duplication
+        angles = linspace(0, 2 * pi, totalStimulusNumber);
 
         if movementDirection == -1
             angles = angles(end:-1:1);
         end
         
-        framesPerPosition = experimentSettings.numFrames/numPositions;
-
+        experimentSettings.circle.reactionSubsetRatio = reactionSubsetRatio;
         experimentSettings.circle.USE_FIXATION_TASK = USE_FIXATION_TASK;
         experimentSettings.circle.movementDirection = movementDirection;
         experimentSettings.circle.radius = radius;
         experimentSettings.circle.circleRadius = circleRadius;
         experimentSettings.circle.circleColor = circleColor;
-        experimentSettings.circle.numPositions = numPositions;
         experimentSettings.circle.angles = angles;
-        experimentSettings.circle.framesPerPosition = framesPerPosition;
 
     elseif experimentSettings.runType == "garbor"
         % Define Gabor patch parameters
-        USE_FIXATION_TASK = false;
+        USE_FIXATION_TASK = true;
         gaborSize = 600;  % Size of the Gabor patch in pixels
         spatialFrequency = 0.03;  % % Frequency of sine grating
         sc = 100;  % Spatial constant of the exponential "hull" (https://github.com/Psychtoolbox-3/Psychtoolbox-3/blob/master/Psychtoolbox/PsychDemos/ProceduralGarboriumDemo.m)
@@ -84,8 +97,6 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
         % Determine whether the predictable stimulus moves clockwise or anti-clockwise.
         % 1 for clockwise, -1 for anti-clockwise.
         movementDirection = -1;
-
-        numConditions = 50;
 
         angles = linspace(0, 360, totalStimulusNumber);
         phaseList = linspace(0, 360, totalStimulusNumber);
@@ -102,14 +113,6 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
             contrastList = contrastList(end:-1:1);
         end
 
-        changeOrientation = false;
-        changeSpatialFrequency = false;
-        changeContrast = false;
-        changeSC = false;
-        changePhase = true;
-
-        framesPerCondition = experimentSettings.numFrames/numConditions;
-
         experimentSettings.garbor.USE_FIXATION_TASK = USE_FIXATION_TASK;
         experimentSettings.garbor.gaborSize = gaborSize;
         experimentSettings.garbor.spatialFrequency = spatialFrequency;
@@ -118,18 +121,24 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
         experimentSettings.garbor.frequencyChangeRate = frequencyChangeRate;
         experimentSettings.garbor.scChangeRate = scChangeRate;
         experimentSettings.garbor.contrastChangeRate = contrastChangeRate;
-        experimentSettings.garbor.numConditions = numConditions;
         experimentSettings.garbor.spatialFrequencies = spatialFrequencies;
         experimentSettings.garbor.contrastList = contrastList;
         experimentSettings.garbor.scList = scList;
         experimentSettings.garbor.phaseList = phaseList;
         experimentSettings.garbor.angles = angles;
-        experimentSettings.garbor.changeOrientation = changeOrientation;
-        experimentSettings.garbor.changeSpatialFrequency = changeSpatialFrequency;
-        experimentSettings.garbor.changeContrast = changeContrast;
-        experimentSettings.garbor.changeSC = changeSC;
-        experimentSettings.garbor.changePhase = changePhase;
-        experimentSettings.garbor.framesPerCondition = framesPerCondition;
-    end
 
+    elseif  experimentSettings.runType == "movie"
+        USE_FIXATION_TASK = true;
+        imageHeightRatio = 0.4;
+        imageWidthRatio = 0.7;
+
+        imageHeight = imageHeightRatio * screenXpixels;
+        imageWidth = imageWidthRatio * screenYpixels;
+        
+        experimentSettings.movie.imageHeightRatio = imageHeightRatio;
+        experimentSettings.movie.imageWidthRatio = imageWidthRatio;
+        experimentSettings.movie.imageHeight = imageHeight;
+        experimentSettings.movie.imageWidth = imageWidth;
+        experimentSettings.movie.USE_FIXATION_TASK = USE_FIXATION_TASK;
+    end
 end

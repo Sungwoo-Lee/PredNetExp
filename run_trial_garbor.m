@@ -6,9 +6,10 @@ function trialSettings = run_trial_garbor(trialSettings, experimentSettings, scr
     %%
     numFrames = experimentSettings.numFrames;
     totalStimulusNumber = experimentSettings.totalStimulusNumber;
+    numConditions = experimentSettings.numConditions;
+    framesPerCondition = experimentSettings.framesPerCondition;
     %%
     gaborSize = experimentSettings.garbor.gaborSize;
-    numConditions = experimentSettings.garbor.numConditions;
     spatialFrequencies = experimentSettings.garbor.spatialFrequencies;
     contrastList = experimentSettings.garbor.contrastList;
     scList = experimentSettings.garbor.scList;
@@ -19,7 +20,7 @@ function trialSettings = run_trial_garbor(trialSettings, experimentSettings, scr
     changeContrast = experimentSettings.garbor.changeContrast;
     changeSC = experimentSettings.garbor.changeSC;
     changePhase = experimentSettings.garbor.changePhase;
-    framesPerCondition = experimentSettings.garbor.framesPerCondition;
+    
 
     %%
     if frame == 0

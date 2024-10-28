@@ -13,7 +13,7 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
     lineWidthPix = experimentSettings.lineWidthPix;
     allCoords = experimentSettings.allCoords;
     predictableTrials = experimentSettings.predictableTrials;
-    reactionTrials = experimentSettings.reactionTrials;
+    
     stimulusDuration = experimentSettings.stimulusDuration;
      
 
@@ -26,13 +26,34 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
 
     frame = 0;
     trialSettings.isPredictable = isPredictable;
+    reactionTrials = experimentSettings.reactionTrials;
     if runType == "circle"
         trialSettings = run_trial_circle(trialSettings, experimentSettings, screenSettings, frame);
         USE_FIXATION_TASK = experimentSettings.circle.USE_FIXATION_TASK;
-    
     elseif runType ==  "garbor"
         trialSettings = run_trial_garbor(trialSettings, experimentSettings, screenSettings, frame);
         USE_FIXATION_TASK = experimentSettings.garbor.USE_FIXATION_TASK;
+    elseif runType ==  "movie"
+%         trialmovie = experimentSettings.movie.movieFolders(trial);
+        if experimentSettings.predictableSubsetRatio == 1
+            trialmovie = fullfile(experimentSettings.movie.movieFolders(1).folder,'prediction',sprintf('trial_%d',trial));
+        else
+            trialmovie = fullfile(experimentSettings.movie.movieFolders(1).folder,'prediction_error',sprintf('trial_%d',trial));
+        end
+
+        movieFiles = dir(fullfile(trialmovie, '*png'));
+        
+        for i = 1:size(movieFiles,1)
+            img = imread(fullfile(movieFiles(i).folder,movieFiles(i).name));
+            img = imresize(img, [experimentSettings.movie.imageHeight, experimentSettings.movie.imageWidth]);
+            images{i}  = img;
+        end
+
+        trialSettings.trialmovie = trialmovie;
+        trialSettings.movieFiles = movieFiles;
+        trialSettings.images = images;
+        trialSettings = run_trial_movie(trialSettings, experimentSettings, screenSettings, frame);
+        USE_FIXATION_TASK = experimentSettings.movie.USE_FIXATION_TASK;
     end
     
     %%
@@ -53,7 +74,7 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
     
     for frame = 1:numFrames
         % Check for 'q' key press to quit the experiment
-        [keyIsDown, ~, keyCode] = KbCheck;
+        [keyIsDown, ~, keyCode] = KbCheck(-1);
         if keyIsDown && keyCode(KbName('q'))
             sca;  % Close the screen
             return;  % Exit the function
@@ -64,6 +85,8 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
             trialSettings = run_trial_circle(trialSettings, experimentSettings, screenSettings, frame);
         elseif runType ==  "garbor"
             trialSettings = run_trial_garbor(trialSettings, experimentSettings, screenSettings, frame);
+        elseif runType ==  "movie"
+            trialSettings = run_trial_movie(trialSettings, experimentSettings, screenSettings, frame);
         end
 
         %%
@@ -81,7 +104,7 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
 
             if ismember(trial, reactionTrials) && ~ responseLogged
                 % Check for 'a' key press to react
-                [keyIsDown, ~, keyCode] = KbCheck;
+                [keyIsDown, ~, keyCode] = KbCheck(-1);
                 if keyIsDown && keyCode(KbName('a'))
                     Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
                     responseLogged = true;
@@ -96,13 +119,15 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
         % Define the rectangle for capturing (entire screen)
         rect = [];  % Empty rectangle captures the entire screen
         
-        % Capture the frame from the screen
-        imageArray = Screen('GetImage', window, rect);
-        fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_STIMULUS_frame_%04d.png', globalFrame, trial, frame));
-        % Save the image as a file
-        imwrite(imageArray, fileName);
+        if experimentSettings.recording
+            % Capture the frame from the screen
+            imageArray = Screen('GetImage', window, rect);
+            fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_STIMULUS_frame_%04d.png', globalFrame, trial, frame));
+            % Save the image as a file
+            imwrite(imageArray, fileName);
 
-        globalFrame = globalFrame + 1;
+            globalFrame = globalFrame + 1;
+        end
 
     end
     
@@ -118,7 +143,6 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
     experimentData.trials(trial).stimulusEnd = stimulusEndTime;
     experimentData.trials(trial).ITIStart = ITIStartTime;
     experimentData.trials(trial).isPredictable = isPredictable;  % Store whether the trial was predictable
-%     experimentData.trials(trial).listOfConditionsPerFrame = listOfConditionsPerFrame; 
     experimentData.trials(trial).trialSettings = trialSettings;
     
     if USE_FIXATION_TASK

@@ -10,34 +10,33 @@ function trialSettings = run_trial_circle(trialSettings, experimentSettings, scr
 
     %%
     numFrames = experimentSettings.numFrames;
+    totalStimulusNumber = experimentSettings.totalStimulusNumber;
+    framesPerCondition = experimentSettings.framesPerCondition;
+    numConditions = experimentSettings.numConditions;
 
     %%
     radius = experimentSettings.circle.radius;
     circleRadius = experimentSettings.circle.circleRadius;
     circleColor = experimentSettings.circle.circleColor;
-    numPositions = experimentSettings.circle.numPositions;
+    
     angles = experimentSettings.circle.angles;
-    framesPerPosition = experimentSettings.circle.framesPerPosition;
-
+    
     %%
     if frame == 0
         isPredictable = trialSettings.isPredictable;
-
-        listOfConditions = linspace(1, numPositions, numPositions);
         
-        if isPredictable
-            randomStartIdex = randi(length(listOfConditions));
-            listOfConditions = [listOfConditions(randomStartIdex:end), listOfConditions(1:randomStartIdex)];
-           
-        else
-            randomizedIndices = randperm(numPositions);
+        conditionInterval = fix(totalStimulusNumber / numConditions);
+        listOfConditions = 1:conditionInterval:totalStimulusNumber;
+
+        if ~isPredictable
+            randomizedIndices = randperm(length(listOfConditions));
             listOfConditions = listOfConditions(randomizedIndices);
         end
-        
-        listOfConditionsPerFrame = repelem(listOfConditions, framesPerPosition);
+
+        listOfConditionsPerFrame = repelem(listOfConditions, framesPerCondition);
     
         if size(listOfConditionsPerFrame,2) < numFrames
-            error('SizeError:ConditionListPerFrame', 'The listOfConditions X framesPerPosition is less than total number of frames');
+            error('SizeError:ConditionListPerFrame', 'The listOfConditions X framesPerCondition is less than total number of frames');
         end
         
         trialSettings.listOfConditionsPerFrame = listOfConditionsPerFrame;
@@ -46,6 +45,7 @@ function trialSettings = run_trial_circle(trialSettings, experimentSettings, scr
         listOfConditionsPerFrame = trialSettings.listOfConditionsPerFrame;
 
         currentAngle = angles(listOfConditionsPerFrame(frame));
+        
         xPos = xCenter + radius * screenXpixels * cos(currentAngle) / aspectRatio;
         yPos = yCenter + radius * screenYpixels * sin(currentAngle);
 

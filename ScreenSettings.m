@@ -27,7 +27,7 @@ function screenSettings = ScreenSettings(screenSize)
         fps = 60;
     end
 
-    fps = 25;
+%     fps = 24;
 
     screenSettings.window = window;
     screenSettings.windowRect = windowRect;
