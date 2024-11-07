@@ -280,19 +280,19 @@ for trial = 1:experimentSettings.numTrials
     [experimentData, globalFrame] = run_trial(trial, experimentSettings, screenSettings, experimentData, globalFrame);
     
     % Save the data after each trial (overwriting the same file)
-    save(['data/run_' num2str(runNumber) '_' runType '_data.mat'], 'experimentData');
-    
-    % Pause for the inter-trial interval (ITI)
-%     WaitSecs(ITI);
-    for frame = 1:experimentSettings.itiFrames
-        % Display only the fixation cross during the inter-trial interval (ITI)
-        Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
-        Screen('Flip', window);
+%     save(['data/run_' num2str(runNumber) '_' runType '_data.mat'], 'experimentData');
 
-        % Define the rectangle for capturing (entire screen)
-        rect = [];  % Empty rectangle captures the entire screen
-        
-        if experimentSettings.recording
+    % Pause for the inter-trial interval (ITI)
+    if experimentSettings.recording
+        for frame = 1:experimentSettings.itiFrames
+            % Display only the fixation cross during the inter-trial interval (ITI)
+            Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
+            Screen('Flip', window);
+
+            % Define the rectangle for capturing (entire screen)
+            rect = [];  % Empty rectangle captures the entire screen
+
+            %         if experimentSettings.recording
             % Capture the frame from the screen
             imageArray = Screen('GetImage', window, rect);
             fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_ITI_frame_%04d.png', globalFrame, trial, frame));
@@ -300,9 +300,34 @@ for trial = 1:experimentSettings.numTrials
             imwrite(imageArray, fileName);
 
             globalFrame = globalFrame + 1;
+            %         end
         end
+    else
+        Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);
+        Screen('Flip', window);
+        WaitSecs(experimentSettings.ITI);
     end
 end
+
+dataSavingStart = GetSecs();
+experimentData.dataSavingStart = dataSavingStart;
+save(['data/run_' num2str(runNumber) '_' runType '_data.mat'], 'experimentData');
+
+dataSavingEnd = GetSecs();
+experimentData.dataSavingEnd = dataSavingEnd;
+
+DrawFormattedText(window, 'Press ''q'' to end the experiment.', 'center', 'center', [1 1 1]);
+Screen('Flip', window);
+% Wait for the participant or experimenter to press the 's' key.
+while true
+    [keyIsDown, ~, keyCode] = KbCheck(-1);
+    if keyIsDown && keyCode(KbName('q'))
+        endKeyTime = GetSecs();  % Record the time when the 's' key is pressed
+        break;
+    end
+end
+experimentData.endKeyTime = endKeyTime;
+save(['data/run_' num2str(runNumber) '_' runType '_data.mat'], 'experimentData');
 
 %%
 % Cleanup

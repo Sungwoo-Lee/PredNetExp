@@ -63,7 +63,7 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
         radius = 0.3;
 
         % Adjust the size of the circle based on the radius.
-        circleRadius = 0.05 * radius * min(screenXpixels, screenYpixels);  % Circle size
+        circleRadius = 0.1 * radius * min(screenXpixels, screenYpixels);  % Circle size
         circleColor = [1 1 1];  % White color for the circle
 
         % Define the number of positions around the circle where the stimulus can appear.

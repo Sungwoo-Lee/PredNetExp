@@ -143,6 +143,10 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
     experimentData.trials(trial).stimulusEnd = stimulusEndTime;
     experimentData.trials(trial).ITIStart = ITIStartTime;
     experimentData.trials(trial).isPredictable = isPredictable;  % Store whether the trial was predictable
+    
+    if runType ==  "movie"
+        trialSettings = rmfield(trialSettings, 'images');
+    end
     experimentData.trials(trial).trialSettings = trialSettings;
     
     if USE_FIXATION_TASK
