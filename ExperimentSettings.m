@@ -1,4 +1,8 @@
 function experimentSettings = ExperimentSettings(experimentSettings, screenSettings)
+    % Use video for stimulus (true) or generate or load images for stimulus
+    % (false)
+    useVideoForStimulus = false;
+
     % Number of trials to be conducted in the experiment.
     numTrials = 14;
     
@@ -30,10 +34,15 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
     allCoords = [xCoords; yCoords];
 
     totalStimulusNumber = 1200;
-    numConditions = 120;
+    if screenSettings.fps == 120
+        numConditions = 120;
+    elseif screenSettings.fps == 60
+        numConditions = 200;
+    end
 
     framesPerCondition = numFrames/numConditions;
     
+    experimentSettings.useVideoForStimulus = useVideoForStimulus;
     experimentSettings.numFrames = numFrames;
     experimentSettings.numTrials = numTrials;
     experimentSettings.stimulusDuration = stimulusDuration;

@@ -2,8 +2,8 @@ function screenSettings = ScreenSettings(screenSize)
    
     % Set up Psychtoolbox, which includes setting preferences and initializing
     % some basic settings that are necessary for the experiment to run correctly.
-%     Screen('Preference', 'SkipSyncTests', 1);
-    Screen('Preference', 'SkipSyncTests', 0);
+    Screen('Preference', 'SkipSyncTests', 1);
+    % Screen('Preference', 'SkipSyncTests', 0);
     PsychDefaultSetup(2);
     
     % Open a window on the screen and set the background color to black (0,0,0).
@@ -28,7 +28,7 @@ function screenSettings = ScreenSettings(screenSize)
         fps = 60;
     end
 
-%     fps = 24;
+    fps = 60;
 
     screenSettings.window = window;
     screenSettings.windowRect = windowRect;
