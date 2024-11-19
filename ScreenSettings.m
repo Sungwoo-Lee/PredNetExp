@@ -5,6 +5,7 @@ function screenSettings = ScreenSettings(screenSize)
     Screen('Preference', 'SkipSyncTests', 1);
     % Screen('Preference', 'SkipSyncTests', 0);
     PsychDefaultSetup(2);
+    HideCursor;
     
     % Open a window on the screen and set the background color to black (0,0,0).
     [window, windowRect] = PsychImaging('OpenWindow', 0, [0 0 0], screenSize);
