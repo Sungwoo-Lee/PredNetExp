@@ -10,7 +10,7 @@ function experimentSettings = ExperimentSettings(experimentSettings, screenSetti
     stimulusDuration = 10;
     
     % Duration of the inter-trial interval (ITI) in seconds.
-    ITI = 13;
+    ITI = 3;
     itiFrames = ITI * screenSettings.fps;
 
     numFrames = round(stimulusDuration * screenSettings.fps);

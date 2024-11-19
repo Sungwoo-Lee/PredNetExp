@@ -1,6 +1,6 @@
 clear;
 clc;
-load("data/run_1_garbor_data.mat");
+load("data/run_1_circle_data.mat");
 
 anchorTime = experimentData.startKeyTime;
 

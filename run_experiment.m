@@ -257,7 +257,7 @@ experimentData.startKeyTime = startKeyTime;
 
 %%
 % 6. INITIAL WAIT PERIOD
-waitForStart = 3; % 13
+waitForStart = 13; % 13
 
 % After pressing 's', wait for a specific period (e.g., 13 seconds) before
 % starting the experiment. 
