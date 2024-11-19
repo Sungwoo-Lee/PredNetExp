@@ -1,10 +1,22 @@
 % Base paths for input images and output videos
-inputBasePath = 'movies/prediction_200frames';
-outputBasePath = 'videoVersionStimulus/movie/predictable';
+inputBasePath = 'recordings/circle/unpredictable';
+% inputBasePath = 'movies/prediction_200frames';
+outputBasePath = 'videoVersionStimulus/circle/unpredictable_30fps';
+modifyRecordSpeed = true;
 
 % Define the target height and width for resizing
-targetHeight = 400;  % Set desired height
-targetWidth = 600;  % Set desired width
+targetWidth = 1920;  % Set desired width
+targetHeight = 1080;  % Set desired height
+% targetWidth = 800;  % Set desired width
+% targetHeight = 600;  % Set desired height
+totalVideoDurationSecond = 10;  % Desired video duration for each video
+
+if modifyRecordSpeed
+    frameRate = 30;
+    uniqueStimulusRepetition = 3;
+    skipSimulusNumber = 2;
+    repetitionInFinals = 3;
+end
 
 % Ensure the output base directory exists
 if ~exist(outputBasePath, 'dir')
@@ -16,7 +28,6 @@ end
 trialFolders = dir(fullfile(inputBasePath, 'trial_*'));
 
 % Loop through each trial folder
-totalVideoDurationSecond = 10;  % Desired video duration for each video
 for trialIdx = 1:length(trialFolders)
     % Define input and output paths for each trial
     trialName = trialFolders(trialIdx).name;  % e.g., 'trial_1'
@@ -34,10 +45,20 @@ for trialIdx = 1:length(trialFolders)
 
     % Load images from the trial folder
     imageFiles = dir(fullfile(trialInputPath, '*.png'));
+
+    if modifyRecordSpeed
+        uniqueStimulusIndex = 1:uniqueStimulusRepetition:length(imageFiles);
+        selectedStimulusIndex = 1:skipSimulusNumber:length(uniqueStimulusIndex);
+        selectedImagesFiles = imageFiles(uniqueStimulusIndex(selectedStimulusIndex));
+        imageFiles = selectedImagesFiles;
+    end
+
     numFrames = length(imageFiles);
-    
-    % Calculate frame rate to match the total duration
-    frameRate = numFrames / totalVideoDurationSecond;
+    % numFrames = length(selectedImagesFiles);
+
+    if ~modifyRecordSpeed
+        frameRate = numFrames / totalVideoDurationSecond;
+    end
 
     % Set up VideoWriter for the current trial
     video = VideoWriter(videoFileName, 'MPEG-4');
@@ -48,10 +69,13 @@ for trialIdx = 1:length(trialFolders)
     for i = 1:numFrames
         % Read and resize the image
         img = imread(fullfile(trialInputPath, imageFiles(i).name));
+        % img = imread(fullfile(trialInputPath, selectedImagesFiles(i).name));
         imgResized = imresize(img, [targetHeight, targetWidth]);  % Resize image
-
-        % Add resized image to the video
-        writeVideo(video, imgResized);
+        
+        for j = 1:repetitionInFinals
+            % Add resized image to the video
+            writeVideo(video, imgResized);
+        end
     end
     
     % Finalize and save the video

@@ -1,6 +1,6 @@
 clear;
 clc;
-load("data/run_4_movie_data.mat");
+load("data/run_1_garbor_data.mat");
 
 anchorTime = experimentData.startKeyTime;
 

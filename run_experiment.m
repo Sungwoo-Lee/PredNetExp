@@ -292,15 +292,13 @@ for trial = 1:experimentSettings.numTrials
             % Define the rectangle for capturing (entire screen)
             rect = [];  % Empty rectangle captures the entire screen
 
-            %         if experimentSettings.recording
-            % Capture the frame from the screen
-            imageArray = Screen('GetImage', window, rect);
-            fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_ITI_frame_%04d.png', globalFrame, trial, frame));
-            % Save the image as a file
-            imwrite(imageArray, fileName);
+            % % Capture the frame from the screen
+            % imageArray = Screen('GetImage', window, rect);
+            % fileName = fullfile('recordings', sprintf('globalFrame%04d_trial%03d_ITI_frame_%04d.png', globalFrame, trial, frame));
+            % % Save the image as a file
+            % imwrite(imageArray, fileName);
 
-            globalFrame = globalFrame + 1;
-            %         end
+            % globalFrame = globalFrame + 1;
         end
     else
         Screen('DrawLines', window, allCoords, lineWidthPix, [1 1 1], [xCenter yCenter]);

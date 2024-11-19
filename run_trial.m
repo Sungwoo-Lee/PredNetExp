@@ -32,15 +32,35 @@ function [experimentData, globalFrame] = run_trial(trial, experimentSettings, sc
     if useVideoForStimulus
         if runType == "circle"
             if isPredictable
-                videoPath = "videoVersionStimulus/circle/predictable";
+                videoPath = "videoVersionStimulus/circle/predictable_30fps";
             else
-                videoPath = "videoVersionStimulus/circle/unpredictable";
+                videoPath = "videoVersionStimulus/circle/unpredictable_30fps";
             end
         elseif runType ==  "garbor"
-            if isPredictable
-                videoPath = "videoVersionStimulus/garbor/predictable";
-            else
-                videoPath = "videoVersionStimulus/garbor/unpredictable";
+            if experimentSettings.garbor.changeOrientation == 1
+                if isPredictable
+                    videoPath = "videoVersionStimulus/garbor_orientation/predictable_30fps";
+                else
+                    videoPath = "videoVersionStimulus/garbor_orientation/unpredictable_30fps";
+                end
+            elseif experimentSettings.garbor.changeSpatialFrequency == 1
+                if isPredictable
+                    videoPath = "videoVersionStimulus/garbor_frequency/predictable_30fps";
+                else
+                    videoPath = "videoVersionStimulus/garbor_frequency/unpredictable_30fps";
+                end
+            elseif experimentSettings.garbor.changeSC == 1
+                if isPredictable
+                    videoPath = "videoVersionStimulus/garbor_sc/predictable_30fps";
+                else
+                    videoPath = "videoVersionStimulus/garbor_sc/unpredictable_30fps";
+                end
+            elseif experimentSettings.garbor.changePhase == 1
+                if isPredictable
+                    videoPath = "videoVersionStimulus/garbor_phase/predictable_30fps";
+                else
+                    videoPath = "videoVersionStimulus/garbor_phase/unpredictable_30fps";
+                end
             end
         elseif runType ==  "movie"
             if isPredictable
